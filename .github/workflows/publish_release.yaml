@@ -29,8 +29,8 @@ jobs:
 
       - name: Set Version
         run: |
-          sed -E 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+$/version_minor=${{ github.events.inputs.version }}/' gradle.properties
-          sed -E 's/version_minor_minor=[0-9]+$/version_minor_minor=${{ github.events.inputs.minor-version }}/' gradle.properties
+          sed -E 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+$/version_minor=${{ github.event.inputs.version }}/' gradle.properties
+          sed -E 's/version_minor_minor=[0-9]+$/version_minor_minor=${{ github.event.inputs.minor-version }}/' gradle.properties
           cat gradle.properties
           # ./gradlew bNpmPackage
 
@@ -39,7 +39,7 @@ jobs:
           git status
           git config --global user.name 'github-action'
           git config --global user.email 'github@cricut.com'
-          git commit -am "Set BDT Version ${{ github.events.inputs.version }}-alpha${{ github.events.inputs.minor-version }}"
+          git commit -am "Set BDT Version ${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}"
           git push
 
       - name: Create Release
@@ -47,8 +47,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.events.inputs.version }}-alpha${{ github.events.inputs.minor-version }}
-          release_name: v${{ github.events.inputs.version }}-alpha${{ github.events.inputs.minor-version }}
-          body: ${{ github.events.inputs.release-notes }}
+          tag_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
+          release_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
+          body: ${{ github.event.inputs.release-notes }}
           draft: false
-          prerelease: ${{ github.events.inputs.prerelease }}
+          prerelease: ${{ github.event.inputs.prerelease }}
