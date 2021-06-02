@@ -1,0 +1,54 @@
+name: Make New Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version to publish'
+        required: true
+        default: '0.0.0'
+      minor-version:
+        description: 'Release minor version to publish'
+        required: true
+        default: '1'
+      release-notes:
+        description: 'Release notes for the version to publish'
+        required: true
+        default: 'none'
+      prerelease:
+        description: 'Create a pre-release'
+        required: false
+        default: false
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Validate Input
+        run: |
+
+      - name: Set Version
+        run: |
+          sed -Ei 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+/version_minor=${{ github.event.inputs.version }}/' gradle.properties
+          sed -Ei 's/version_minor_minor=[0-9]+/version_minor_minor=${{ github.event.inputs.minor-version }}/' gradle.properties
+          cat gradle.properties
+          # ./gradlew bNpmPackage
+
+      - name: Commit Version
+        run: |
+          git status
+          git config --global user.name 'github-action'
+          git config --global user.email 'github@cricut.com'
+          git commit -am "Set BDT Version ${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}"
+          git push
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
+          release_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
+          body: ${{ github.event.inputs.release-notes }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease }}
