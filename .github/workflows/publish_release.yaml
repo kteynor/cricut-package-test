@@ -1,0 +1,62 @@
+name: Make New Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version to publish'
+        required: true
+        default: '0.0.0'
+      minor-version:
+        description: 'Release minor version to publish'
+        required: true
+        default: '1'
+      release-notes:
+        description: 'Release notes for the version to publish'
+        required: true
+        default: 'none'
+      prerelease:
+        description: 'Create a pre-release'
+        required: false
+        default: false
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Validate Input
+        run: |
+
+      - name: Set Version
+        run: |
+          sed -E 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+$/version_minor=${{ github.events.inputs.version }}/' gradle.properties
+          sed -E 's/version_minor_minor=[0-9]+$/version_minor_minor=${{ github.events.inputs.minor-version }}/' gradle.properties
+          cat gradle.properties
+          # ./gradlew bNpmPackage
+
+      - name: Commit Version
+        run: |
+          git status
+          git config --global user.name 'github-action'
+          git config --global user.email 'github@cricut.com'
+          git commit -am "Set BDT Version ${{ github.events.inputs.version }}-alpha${{ github.events.inputs.minor-version }}"
+          git push
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.events.inputs.version }}-alpha${{ github.events.inputs.minor-version }}
+          release_name: v${{ github.events.inputs.version }}-alpha${{ github.events.inputs.minor-version }}
+          body: ${{ github.events.inputs.release-notes }}
+          draft: false
+          prerelease: ${{ github.events.inputs.prerelease }}
+
+
+# sed -E 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+$/version_minor=NEW_VERSION/' gradle.properties
+# sed -E 's/version_minor_minor=[0-9]+$/version_minor_minor=NEW_MINOR_VERSION/' gradle.properties
+
+sed -E 's/version_minor=\([0-9]+\.[0-9]+\.[0-9]+\)/version_minor=NEW_VERSION/' foo.txt
+
+sed -E 's/version_minor=([0-9]+\.[0-9]+\.[0-9]+)/'
