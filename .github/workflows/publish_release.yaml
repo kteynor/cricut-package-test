@@ -52,11 +52,3 @@ jobs:
           body: ${{ github.events.inputs.release-notes }}
           draft: false
           prerelease: ${{ github.events.inputs.prerelease }}
-
-
-# sed -E 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+$/version_minor=NEW_VERSION/' gradle.properties
-# sed -E 's/version_minor_minor=[0-9]+$/version_minor_minor=NEW_MINOR_VERSION/' gradle.properties
-
-sed -E 's/version_minor=\([0-9]+\.[0-9]+\.[0-9]+\)/version_minor=NEW_VERSION/' foo.txt
-
-sed -E 's/version_minor=([0-9]+\.[0-9]+\.[0-9]+)/'
