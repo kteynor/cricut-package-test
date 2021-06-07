@@ -1,54 +1,40 @@
 name: Make New Release
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version to publish'
-        required: true
-        default: '0.0.0'
-      minor-version:
-        description: 'Release minor version to publish'
-        required: true
-        default: '1'
-      release-notes:
-        description: 'Release notes for the version to publish'
-        required: true
-        default: 'none'
-      prerelease:
-        description: 'Create a pre-release'
-        required: false
-        default: false
+  pull_request:
 
 jobs:
-  publish-release:
-    runs-on: ubuntu-latest
+  test-env:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Validate Input
+      
+      - name: Set Env Var
         run: |
-
-      - name: Set Version
+          $dir_sha = (Get-FileHash -Path .\hash-source.txt -Algorithm SHA256).Hash
+          echo "dir-sha=key-$($dir_sha)" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+      
+      - name: Use Env Var
         run: |
-          sed -Ei 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+/version_minor=${{ github.event.inputs.version }}/' gradle.properties
-          sed -Ei 's/version_minor_minor=[0-9]+/version_minor_minor=${{ github.event.inputs.minor-version }}/' gradle.properties
-          cat gradle.properties
-          # ./gradlew bNpmPackage
+          echo "dir-sha: ${{ env.dir-sha }}"
 
-      - name: Commit Version
+
+  test-multiline:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set Multiline Var
         run: |
-          git status
-          git config --global user.name 'github-action'
-          git config --global user.email 'github@cricut.com'
-          git commit -am "Set BDT Version ${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}"
-          git push
+          sha_256=$(shasum -a 256 ./hash-source.txt | cut -d" " -f1)
+          sha_384=$(shasum -a 384 ./hash-source.txt | cut -d" " -f1)
+          sha_512=$(shasum -a 512 ./hash-source.txt | cut -d" " -f1)
 
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
-          release_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
-          body: ${{ github.event.inputs.release-notes }}
-          draft: false
-          prerelease: ${{ github.event.inputs.prerelease }}
+          echo "shas<<EOF" >> $GITHUB_ENV
+          echo "$sha_256" >> $GITHUB_ENV
+          echo "$sha_384" >> $GITHUB_ENV
+          echo "$sha_512" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Use Multiline Var
+        run: |
+          echo "multiline var: ${{ env.shas }}"
+
+
