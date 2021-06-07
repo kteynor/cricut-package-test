@@ -10,7 +10,7 @@ jobs:
       
       - name: Set Env Var
         run: |
-          $dir_sha = (Get-FileHash -Path .* -Algorithm SHA256).Hash
+          $dir_sha = (Get-FileHash -Path .\hash-source.txt -Algorithm SHA256).Hash
           echo "dir-sha=key-$($dir_sha)" >> $GITHUB_ENV
       
       - name: Use Env Var
