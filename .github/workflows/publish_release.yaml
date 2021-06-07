@@ -21,34 +21,15 @@ on:
 
 jobs:
   publish-release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Validate Input
+      
+      - name: Set Env Var
         run: |
-
-      - name: Set Version
+          $dir_sha = (Get-FileHash -Path .* -Algorithm SHA256).Hash
+          echo "dir-sha=key-$($dir_sha)" >> $GITHUB_ENV
+      
+      - name: Use Env Var
         run: |
-          sed -Ei 's/version_minor=[0-9]+\.[0-9]+\.[0-9]+/version_minor=${{ github.event.inputs.version }}/' gradle.properties
-          sed -Ei 's/version_minor_minor=[0-9]+/version_minor_minor=${{ github.event.inputs.minor-version }}/' gradle.properties
-          cat gradle.properties
-          # ./gradlew bNpmPackage
-
-      - name: Commit Version
-        run: |
-          git status
-          git config --global user.name 'github-action'
-          git config --global user.email 'github@cricut.com'
-          git commit -am "Set BDT Version ${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}"
-          git push
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
-          release_name: v${{ github.event.inputs.version }}-alpha${{ github.event.inputs.minor-version }}
-          body: ${{ github.event.inputs.release-notes }}
-          draft: false
-          prerelease: ${{ github.event.inputs.prerelease }}
+          echo "dir-sha: ${{ env.dir-sha }}"
