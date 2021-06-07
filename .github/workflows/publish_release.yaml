@@ -3,7 +3,7 @@ on:
   pull_request:
 
 jobs:
-  publish-release:
+  test-env:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,3 +16,24 @@ jobs:
       - name: Use Env Var
         run: |
           echo "dir-sha: ${{ env.dir-sha }}"
+
+
+  test-multiline:
+    runs-on: macos-latest
+    steps:
+      - name: Set Multiline Var
+        run: |
+          sha_256=$(shasum -a 256 ./hash-source.txt | cut -d" " -f1)
+          sha_384=$(shasum -a 384 ./hash-source.txt | cut -d" " -f1)
+          sha_512=$(shasum -a 512 ./hash-source.txt | cut -d" " -f1)
+
+          echo "shas<<EOF" >> $GITHUB_ENV
+          echo "$sha_256" >> $GITHUB_ENV
+          echo "$sha_384" >> $GITHUB_ENV
+          echo "$sha_512" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Use Multiline Var
+        run: |
+          echo "multiline var: ${{ env.shas }}"
+
+
