@@ -1,23 +1,6 @@
 name: Make New Release
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version to publish'
-        required: true
-        default: '0.0.0'
-      minor-version:
-        description: 'Release minor version to publish'
-        required: true
-        default: '1'
-      release-notes:
-        description: 'Release notes for the version to publish'
-        required: true
-        default: 'none'
-      prerelease:
-        description: 'Create a pre-release'
-        required: false
-        default: false
+  pull_request:
 
 jobs:
   publish-release:
