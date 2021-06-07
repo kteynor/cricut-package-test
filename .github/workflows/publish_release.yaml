@@ -21,6 +21,7 @@ jobs:
   test-multiline:
     runs-on: macos-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Set Multiline Var
         run: |
           sha_256=$(shasum -a 256 ./hash-source.txt | cut -d" " -f1)
